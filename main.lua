@@ -28,14 +28,21 @@ function love.draw()
 end
 
 function love.mousepressed(x,y,button,istouch,presses)
-   cursorx, cursory = love.mouse.getPosition()
-   for _, obj in ipairs(gameObjects) do
+   local cursorx, cursory = love.mouse.getPosition()
+   local grabbedObjIdx
+   for i, obj in lume.ripairs(gameObjects) do -- go in reverse so we grab the top objects first
       if button == 1 and aboveGrabbableObject(obj, cursorx, cursory) then
          mouseclicked = 1
          obj.grabbed = true
          obj.grabOffsetx = obj.x-love.mouse.getX()
          obj.grabOffsety = obj.y-love.mouse.getY()
+         grabbedObjIdx = i
+         break
       end
+   end
+   if grabbedObjIdx then
+      -- Move this object to the top of the list
+      lume.push(gameObjects, table.remove(gameObjects, grabbedObjIdx))
    end
 end
 
