@@ -1,9 +1,13 @@
 local lume = require('lume')
 
+local client = require('client')
+
 local gameObjects = {}
+local nextId = 1
 
 function love.load()
    initializeGameboard()
+   client.connect()
 end
 
 local cursorx = 0
@@ -11,6 +15,16 @@ local cursory = 0
 local mouseclicked = 0
 
 function love.update()
+   local events = client.getEvents()
+   for _, event in ipairs(events) do
+      if event.action == "move" then
+         obj = lume.first(lume.filter(gameObjects, function(obj) return obj.id == event.id end))
+         if not obj.grabbed then
+            obj.x = event.x
+            obj.y = event.y
+         end
+      end
+   end
    lume.each(gameObjects, moveIfGrabbed)
 end
 
@@ -18,6 +32,9 @@ function moveIfGrabbed(obj)
    if obj.grabbed then
       obj.x = love.mouse.getX() + obj.grabOffsetx
       obj.y = love.mouse.getY() + obj.grabOffsety
+      if client.connected then -- If this is a networked game send the new coords
+         client.updatePosition(obj)
+      end
    end
 end
 
@@ -75,6 +92,8 @@ function newGrabbableObject (image, x, y, w, h, centered, rot)
    grabbableObject.x = x
    grabbableObject.y = y
    grabbableObject.grabbed = false
+   grabbableObject.id = nextId
+   nextId = nextId + 1
    return grabbableObject
 end
 
