@@ -41,6 +41,7 @@ end
 
 function love.draw()
    lume.each(gameObjects, drawGrabbableObject)
+   love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
    love.graphics.print(cursorx..","..cursory,10,10)
 end
 
@@ -53,6 +54,13 @@ function love.mousepressed(x,y,button,istouch,presses)
          obj.grabbed = true
          obj.grabOffsetx = obj.x-love.mouse.getX()
          obj.grabOffsety = obj.y-love.mouse.getY()
+         if presses == 2 then
+           if not obj.flipped then
+             obj.flipped = true
+           else
+             obj.flipped = false
+           end
+         end
          grabbedObjIdx = i
          break
       end
@@ -71,13 +79,14 @@ function love.mousereleased(x,y,button,istouch,presses)
 end
 
 function initializeGameboard()
-   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),100,100, 100, 100, true))
-   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),100,300, 100, 100, true))
+   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
+   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
 end
 
-function newGrabbableObject (image, x, y, w, h, centered, rot)
+function newGrabbableObject (image, back, x, y, w, h, centered, rot)
    local grabbableObject = {}
    grabbableObject.image  = image
+   grabbableObject.back = back
    grabbableObject.sx = w/image:getWidth()
    grabbableObject.sy = h/image:getHeight()
    grabbableObject.ox = 0
@@ -98,7 +107,11 @@ function newGrabbableObject (image, x, y, w, h, centered, rot)
 end
 
 function drawGrabbableObject (grabbableObject)
-   love.graphics.draw(grabbableObject.image, grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
+  if grabbableObject.flipped then
+    love.graphics.draw(grabbableObject.back, grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
+  else
+    love.graphics.draw(grabbableObject.image, grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
+  end
 end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
