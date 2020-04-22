@@ -20,8 +20,7 @@ function love.update()
       if event.action == "move" then
          obj = lume.first(lume.filter(gameObjects, function(obj) return obj.id == event.id end))
          if not obj.grabbed then
-            obj.x = event.x
-            obj.y = event.y
+            moveGrabbableObject(obj, event.x, event.y)
          end
       end
    end
@@ -30,8 +29,7 @@ end
 
 function moveIfGrabbed(obj)
    if obj.grabbed then
-      obj.x = love.mouse.getX() + obj.grabOffsetx
-      obj.y = love.mouse.getY() + obj.grabOffsety
+      moveGrabbableObject(obj, love.mouse.getX() + obj.grabOffsetx, love.mouse.getY() + obj.grabOffsety)
       if client.connected then -- If this is a networked game send the new coords
          client.updatePosition(obj)
       end
@@ -106,4 +104,9 @@ function aboveGrabbableObject(grabbableObject, cursorx, cursory)
       cursorx < grabbableObject.x + grabbableObject.width/2 and
       cursory > grabbableObject.y - grabbableObject.height/2 and
       cursory < grabbableObject.y + grabbableObject.height/2
+end
+
+function moveGrabbableObject(grabbableObject, x, y)
+   grabbableObject.x = x
+   grabbableObject.y = y
 end
