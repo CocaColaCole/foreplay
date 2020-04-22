@@ -1,5 +1,5 @@
 function love.load()
-  wheat = newGrabbableObject(love.graphics.newImage("wheat.png"),100,100, 100, 100, true)
+  wheat = newGrabbableObject(love.graphics.newImage("resources/wheat.png"),100,100, 100, 100, true)
 end
 
 
