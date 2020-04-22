@@ -8,7 +8,7 @@ local udp
 function client.connect()
    udp = socket.udp()
    udp:settimeout(0)
-   udp:setsockname("*", 5555)
+   udp:setsockname("*", 0) -- Let OS pick a port
    udp:setpeername("localhost", 8008) -- TODO allow the user to set this
    client.connected = true
 end
