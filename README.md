@@ -1,8 +1,8 @@
-###Online Settlers of Catan
+### Online Settlers of Catan
 
-##Part Distributions
+## Part Distributions
 
-#Development Cards
+# Development Cards
 Card|Quantity
 ----|----
 Knight|14
@@ -11,7 +11,7 @@ Year of Plenty|2
 Monopoly|2
 Road Building|2
 
-#Resource Cards
+# Resource Cards
 Resource|Quantity
 ----|----
 Lumber|19
@@ -21,7 +21,7 @@ Brick|19
 Ore|19
 
 
-#Number Chits
+# Number Chits
 Number|Quantity
 ----|----
 2|1
@@ -35,7 +35,7 @@ Number|Quantity
 11|2
 12|1
 
-#Terrain Hexes
+# Terrain Hexes
 Terrain Style|Quantity
 ----|----
 Forest|4
@@ -45,7 +45,7 @@ River Bank|3
 Mountain|3
 Desert|1
 
-#Harbor Chits
+# Harbor Chits
 Harbor Style|Quantity
 ----|----
 2:1 Lumber|1
@@ -55,7 +55,7 @@ Harbor Style|Quantity
 2:1 Ore|1
 3:1 ?|4
 
-#Player Pieces
+# Player Pieces
 Piece|Quantity
 ----|----
 Settlement|5
