@@ -3,29 +3,31 @@ local lume = require('lume')
 
 local client = {}
 client.connected = false
-local udp
+local tcp
 
 function client.connect()
-   udp = socket.udp()
-   udp:settimeout(0)
-   udp:setsockname("*", 0) -- Let OS pick a port
-   udp:setpeername("localhost", 8008) -- TODO allow the user to set this
+   tcp = socket.tcp()
+   local ok, err = tcp:connect("localhost", 8008) -- TODO allow the user to set this
+   if err then
+      error(err)
+   end
+   tcp:settimeout(0)
    client.connected = true
 end
 
 function client.updatePosition(networkedObject)
-   local packet = string.format("move: <0x%x, %d, %d>",
+   local packet = string.format("move: <0x%x, %d, %d>\r\n",
                                 networkedObject.id,
                                 networkedObject.x,
                                 networkedObject.y)
-   udp:send(packet)
+   tcp:send(packet)
 end
 
 function client.getEvents()
    events = {}
    while true do
-      val, err = udp:receive()
-      if err == "timeout" or err == "connection refused" then
+      val, err = tcp:receive()
+      if err == "timeout" or err == "closed" then
          break
       elseif val then
          lume.push(events, client.parseEvent(val))

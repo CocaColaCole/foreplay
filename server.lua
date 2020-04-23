@@ -1,33 +1,59 @@
 local socket = require("socket")
 local lume = require("lume")
 
-local udp
+local tcp
 local clients = {}
 
 function main()
-   udp = socket.udp()
-   udp:setsockname("*", 8008)
-   udp:settimeout(0)
+   tcp = socket.tcp()
+   tcp:bind("*", 8008)
+   tcp:settimeout(0)
+   tcp:listen()
    while true do
+      acceptNewClients()
       local events = getEvents()
-      for _, event in ipairs(events) do
-         handleEvent(event)
-      end
+      lume.each(events, handleEvent)
    end
+end
+
+function acceptNewClients()
+   local done = false
+   repeat
+      client, err = tcp:accept()
+      if err then
+         if err == "timeout" then
+            done = true
+         else
+            error(err)
+         end
+      else
+         local ip, port = client:getpeername()
+         client:settimeout(0)
+         lume.push(clients, {ip=ip, port=port, socket=client})
+         print(string.format("accepted new client %s:%d", ip, port))
+      end
+   until done
 end
 
 function getEvents()
    local events = {}
-   while true do
-      val, ip, port = udp:receivefrom()
-      if ip == "timeout" then
-         break
-      else
-         lume.push(events, parseEvent(val, ip, port))
-      end
-      if not lume.find(clients, {ip=ip, port=port}) then
-         lume.push(clients, {ip=ip, port=port})
-      end
+   for i, client in ipairs(clients) do
+      local done = false
+      repeat
+         val, err = client.socket:receive() -- Read one line of text
+         if err then
+            if err == "timeout" then
+               done = true
+            elseif err == "closed" then
+               table.remove(clients, i)
+               done = true
+            else
+               error(err)
+            end
+         else
+            lume.push(events, parseEvent(val, client.ip, client.port))
+         end
+      until done
    end
    return events
 end
@@ -50,10 +76,10 @@ end
 
 function handleEvent(event)
    if event.action == "move" then
-      packet = string.format("move: <0x%x, %d, %d>", event.id, event.x, event.y)
+      packet = string.format("move: <0x%x, %d, %d>\r\n", event.id, event.x, event.y)
       for _, client in ipairs(clients) do
          if client.ip ~= event.ip or client.port ~= event.port then
-            udp:sendto(packet, client.ip, client.port)
+            client.socket:send(packet)
          end
       end
    end
