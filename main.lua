@@ -1,13 +1,17 @@
 local lume = require('lume')
-
 local client = require('client')
-
+math.randomseed(os.time())
 local gameObjects = {}
 local nextId = 1
-
+local hexLocation = {{300,150},{400,150},{500,150},
+                {250,225},{350,225},{450,225},{550,225},
+            {200,300},{300,300},{400,300},{500,300},{600,300},
+                {250,375},{350,375},{450,375},{550,375},
+                    {300,450},{400,450},{500,450}}--x,y
+local hexChoices = {"wood","wood","wood","wood","sheep","sheep","sheep","sheep","wheat","wheat","wheat","wheat","brick","brick","brick","stone","stone","stone","desert"}
 function love.load()
    initializeGameboard()
-   client.connect()
+   --client.connect()
 end
 
 local cursorx = 0
@@ -15,15 +19,15 @@ local cursory = 0
 local mouseclicked = 0
 
 function love.update()
-   local events = client.getEvents()
-   for _, event in ipairs(events) do
-      if event.action == "move" then
-         obj = lume.first(lume.filter(gameObjects, function(obj) return obj.id == event.id end))
-         if not obj.grabbed then
-            moveGrabbableObject(obj, event.x, event.y)
-         end
-      end
-   end
+   --local events = client.getEvents()
+  -- for _, event in ipairs(events) do
+      --if event.action == "move" then
+      --   obj = lume.first(lume.filter(gameObjects, function(obj) return obj.id == event.id end))
+      --   if not obj.grabbed then
+      --      moveGrabbableObject(obj, event.x, event.y)
+      --   end
+    --  end
+  -- end
    lume.each(gameObjects, moveIfGrabbed)
 end
 
@@ -40,7 +44,6 @@ end
 function love.draw()
    lume.each(gameObjects, drawGrabbableObject)
    love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
-   love.graphics.print(cursorx..","..cursory,10,10)
 end
 
 function love.mousepressed(x,y,button,istouch,presses)
@@ -77,8 +80,15 @@ function love.mousereleased(x,y,button,istouch,presses)
 end
 
 function initializeGameboard()
-   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
-   table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
+    table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
+    table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
+--gameboard render
+lume.shuffle(hexChoices)
+    for i = 1, 19 do
+        local terrain = lume.randomchoice(hexChoices)
+        lume.remove(hexChoices,terrain)
+        table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
+    end
 end
 
 function newGrabbableObject (image, back, x, y, w, h, centered, rot)
