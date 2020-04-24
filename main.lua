@@ -8,7 +8,26 @@ local hexLocation = {{300,150},{400,150},{500,150},
             {200,300},{300,300},{400,300},{500,300},{600,300},
                 {250,375},{350,375},{450,375},{550,375},
                     {300,450},{400,450},{500,450}}--x,y
-local hexChoices = {"wood","wood","wood","wood","sheep","sheep","sheep","sheep","wheat","wheat","wheat","wheat","brick","brick","brick","stone","stone","stone","desert"}
+local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
+local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
+local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
+
+function unpackDistribution(distribution, shuffle)
+  unpackedDistribution = {}
+  for _, item in ipairs(distribution) do
+    for i = 1, item[2] do
+      table.insert(unpackedDistribution,item[1])
+    end
+  end
+  if shuffle == true then
+    unpackedDistribution = lume.shuffle(unpackedDistribution)
+  end
+  return unpackedDistribution
+end
+
+
+
+--local hexChoices = {"wood","wood","wood","wood","sheep","sheep","sheep","sheep","wheat","wheat","wheat","wheat","brick","brick","brick","stone","stone","stone","desert"}
 function love.load()
    initializeGameboard()
    --client.connect()
@@ -83,11 +102,11 @@ function initializeGameboard()
     table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
     table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
 --gameboard render
-lume.shuffle(hexChoices)
-    for i = 1, 19 do
-        local terrain = lume.randomchoice(hexChoices)
-        lume.remove(hexChoices,terrain)
+    local terrainHexMapping = unpackDistribution(terrainDistribution,true)
+    for i, terrain in lume.ripairs(terrainHexMapping) do
         table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
+        print(terrain)
+        table.remove(terrainHexMapping,i)
     end
 end
 
