@@ -99,14 +99,33 @@ function love.mousereleased(x,y,button,istouch,presses)
 end
 
 function initializeGameboard()
-    table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
-    table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
+    --table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,100, 100, 100, true))
+    --table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/wheat.png"),love.graphics.newImage("resources/honeycomb.png"),100,300, 100, 100, true))
 --gameboard render
     local terrainHexMapping = unpackDistribution(terrainDistribution,true)
     for i, terrain in lume.ripairs(terrainHexMapping) do
         table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
-        print(terrain)
         table.remove(terrainHexMapping,i)
+    end
+    local devCardMapping = unpackDistribution(devCardDistribution,true)
+    for i, card in lume.ripairs(devCardMapping) do
+      table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/round-shield.png"),love.graphics.newImage("resources/"..card..".png"),750,550,100,100,true))
+    end
+    local resourceMapping = unpackDistribution(resourceDistribution,false)
+    for i, resource in lume.ripairs(resourceMapping) do
+        local ypos = 50
+        if resource == "wood" then
+            ypos = 50
+        elseif resource == "sheep" then
+          ypos = 150
+        elseif resource == "wheat" then
+          ypos = 250
+        elseif resource == "brick" then
+          ypos = 350
+        else --stone
+          ypos = 450
+        end
+        table.insert(gameObjects, newGrabbableObject(love.graphics.newImage("resources/"..resource..".png"),love.graphics.newImage("resources/honeycomb.png"),750,ypos, 100, 100, true))
     end
 end
 
