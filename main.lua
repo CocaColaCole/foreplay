@@ -13,6 +13,7 @@ local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450}
 local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
 local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
+local buildingDistribution = {{"path",15},{"settlement",5},{"city",4}}
 local numberMapping = {5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11}
 function unpackDistribution(distribution, shuffle)
   unpackedDistribution = {}
@@ -126,9 +127,7 @@ function initializeGameboard()
         table.insert(gameObjects, newGrabbableObject("terrainHex", love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
         if terrain ~= "desert" then
           table.insert(gameObjects,newScaleableText("number",numberMapping[1],hexLocation[i][1],hexLocation[i][2],50,50,true,0))
-          table.remove(numberMapping,1)
         end
-        table.remove(terrainHexMapping,i)
     end
     local devCardMapping = unpackDistribution(devCardDistribution,true)
     for i, card in lume.ripairs(devCardMapping) do
@@ -150,7 +149,17 @@ function initializeGameboard()
         end
         table.insert(gameObjects, newGrabbableObject("card", love.graphics.newImage("resources/"..resource..".png"),love.graphics.newImage("resources/honeycomb.png"),750,ypos, 100, 100, true))
     end
-    table.insert(gameObjects, newScaleableText("dice",dice, 0, 0, 50, 50, false, 0))
+    local buildingMapping = unpackDistribution(buildingDistribution)
+    for i, building in ipairs(buildingMapping) do
+      local h = 30
+      local w = 30
+      if building == "path" then
+        h = 5
+        w = 50
+      end
+      table.insert(gameObjects, newGrabbableObject(building, love.graphics.newImage("resources/"..building..".png"),love.graphics.newImage("resources/"..building..".png"),200,50,h,w,true))
+    end
+
 end
 
 
