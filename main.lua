@@ -3,15 +3,17 @@ local client = require('client')
 math.randomseed(os.time())
 local gameObjects = {}
 local nextId = 1
-local hexLocation = {{300,150},{400,150},{500,150},
+local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
+                     {350,225},{300,300},{350,375},{450,375},{500,300},{450,225},{400,300}} --spiral layout
+--[[                    {{300,150},{400,150},{500,150},
                 {250,225},{350,225},{450,225},{550,225},
             {200,300},{300,300},{400,300},{500,300},{600,300},
                 {250,375},{350,375},{450,375},{550,375},
-                    {300,450},{400,450},{500,450}}--x,y
+                    {300,450},{400,450},{500,450}}--x,y --]]
 local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
 local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
-
+local numberMapping = {5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11}
 function unpackDistribution(distribution, shuffle)
   unpackedDistribution = {}
   for _, item in ipairs(distribution) do
@@ -50,7 +52,7 @@ function love.update()
     --  end
   -- end
    lume.each(gameObjects, moveIfGrabbed)
-  print(love.mouse.getX()..","..love.mouse.getY())
+  --print(love.mouse.getX()..","..love.mouse.getY())
 
 end
 
@@ -67,7 +69,15 @@ end
 
 
 function love.draw()
-   lume.each(gameObjects, drawGrabbableObject)
+   for i, obj in ipairs(gameObjects) do
+     if obj.pieceType == "number" then
+       love.graphics.setColor(0,0,0)
+     else
+       love.graphics.reset()
+     end
+   drawGrabbableObject(obj)
+   end
+   --lume.each(gameObjects, drawGrabbableObject)
    love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
 end
 
@@ -114,6 +124,10 @@ function initializeGameboard()
     local terrainHexMapping = unpackDistribution(terrainDistribution,true)
     for i, terrain in lume.ripairs(terrainHexMapping) do
         table.insert(gameObjects, newGrabbableObject("terrainHex", love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
+        if terrain ~= "desert" then
+          table.insert(gameObjects,newScaleableText("number",numberMapping[1],hexLocation[i][1],hexLocation[i][2],50,50,true,0))
+          table.remove(numberMapping,1)
+        end
         table.remove(terrainHexMapping,i)
     end
     local devCardMapping = unpackDistribution(devCardDistribution,true)
@@ -213,7 +227,7 @@ function aboveGrabbableObject(grabbableObject, cursorx, cursory)
       cursorx < grabbableObject.x + grabbableObject.width and
       cursory > grabbableObject.y and
       cursory < grabbableObject.y + grabbableObject.height
-  end 
+  end
 end
 
 function moveGrabbableObject(grabbableObject, x, y)
