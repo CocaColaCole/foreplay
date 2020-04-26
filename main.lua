@@ -1,5 +1,10 @@
+-- Library imports
 local lume = require('lume')
+local gui = require('gspot')
+-- Local imports
 local client = require('client')
+
+-- Gameboard setup
 math.randomseed(os.time())
 local gameObjects = {}
 local nextId = 1
@@ -31,9 +36,14 @@ end
 
 
 --local hexChoices = {"wood","wood","wood","wood","sheep","sheep","sheep","sheep","wheat","wheat","wheat","wheat","brick","brick","brick","stone","stone","stone","desert"}
+
+local gamemode
+
 function love.load()
-   initializeGameboard()
-   --client.connect()
+   gamemode = "menu"
+   initializeMenu()
+   -- initializeGameboard()
+   -- client.connect()
 end
 
 local cursorx = 0
@@ -42,19 +52,12 @@ local mouseclicked = 0
 local dice = 0
 
 
-function love.update()
-   --local events = client.getEvents()
-  -- for _, event in ipairs(events) do
-      --if event.action == "move" then
-      --   obj = lume.first(lume.filter(gameObjects, function(obj) return obj.id == event.id end))
-      --   if not obj.grabbed then
-      --      moveGrabbableObject(obj, event.x, event.y)
-      --   end
-    --  end
-  -- end
-   lume.each(gameObjects, moveIfGrabbed)
-  --print(love.mouse.getX()..","..love.mouse.getY())
-
+function love.update(dt)
+   if gamemode == "menu" then
+      gui:update(dt)
+   elseif gamemode == "foreplay" then
+      lume.each(gameObjects, moveIfGrabbed)
+   end
 end
 
 
@@ -70,55 +73,99 @@ end
 
 
 function love.draw()
-   for i, obj in ipairs(gameObjects) do
-     if obj.pieceType == "number" then
-       love.graphics.setColor(0,0,0)
-     else
-       love.graphics.reset()
-     end
-   drawGrabbableObject(obj)
+   if gamemode == "menu" then
+      gui:draw()
+   elseif gamemode == "foreplay" then
+      for i, obj in ipairs(gameObjects) do
+         if obj.pieceType == "number" then
+            love.graphics.setColor(0,0,0)
+         else
+            love.graphics.reset()
+         end
+         drawGrabbableObject(obj)
+      end
+      love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
    end
-   --lume.each(gameObjects, drawGrabbableObject)
-   love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
 end
 
 function love.mousepressed(x,y,button,istouch,presses)
-   local cursorx, cursory = love.mouse.getPosition()
-   local grabbedObjIdx
-   for i, obj in lume.ripairs(gameObjects) do -- go in reverse so we grab the top objects first
-      if button == 1 and aboveGrabbableObject(obj, cursorx, cursory) then
-         mouseclicked = 1
-         if obj.grabbable then
-           obj.grabbed = true
-           obj.grabOffsetx = obj.x-love.mouse.getX()
-           obj.grabOffsety = obj.y-love.mouse.getY()
-           if presses == 2 then
-             if not obj.flipped then
-               obj.flipped = true
-             else
-               obj.flipped = false
-             end
-           end
-           grabbedObjIdx = i
-           break
+   if gamemode == "menu" then
+      gui:mousepress(x, y, button)
+   elseif gamemode == "foreplay" then
+      local cursorx, cursory = love.mouse.getPosition()
+      local grabbedObjIdx
+      for i, obj in lume.ripairs(gameObjects) do -- go in reverse so we grab the top objects first
+         if button == 1 and aboveGrabbableObject(obj, cursorx, cursory) then
+            mouseclicked = 1
+            if obj.grabbable then
+               obj.grabbed = true
+               obj.grabOffsetx = obj.x-love.mouse.getX()
+               obj.grabOffsety = obj.y-love.mouse.getY()
+               if presses == 2 then
+                  if not obj.flipped then
+                     obj.flipped = true
+                  else
+                     obj.flipped = false
+                  end
+               end
+               grabbedObjIdx = i
+               break
+            end
+            if obj.pieceType == "dice" and presses == 2 then
+               obj.text = rollDice()
+               obj.image = love.graphics.newText(love.graphics.newFont("resources/arial.ttf"),obj.text)
+            end
          end
-         if obj.pieceType == "dice" and presses == 2 then
-           obj.text = rollDice()
-           obj.image = love.graphics.newText(love.graphics.newFont("resources/arial.ttf"),obj.text)
-        end
       end
-   end
-   if grabbedObjIdx then
-      -- Move this object to the top of the list
-      lume.push(gameObjects, table.remove(gameObjects, grabbedObjIdx))
+      if grabbedObjIdx then
+         -- Move this object to the top of the list
+         lume.push(gameObjects, table.remove(gameObjects, grabbedObjIdx))
+      end
    end
 end
 
 function love.mousereleased(x,y,button,istouch,presses)
-   if button == 1 then
-      mouseclicked = 0
-      lume.each(gameObjects, function(obj) obj.grabbed = false end)
+   if gamemode == "menu" then
+      -- TODO
+   elseif gamemode == "foreplay" then
+      if button == 1 then
+         mouseclicked = 0
+         lume.each(gameObjects, function(obj) obj.grabbed = false end)
+      end
    end
+end
+
+function love.keypressed(key)
+   if gui.focus then
+      gui:keypress(key)
+   end
+end
+
+function initializeMenu()
+   local menu = gui:group('', {x = 300, y=200})
+   local offlineButton = gui:button("Offline", {
+                                       y = 0,
+                                       w = 200,
+                                       h = 50
+                                               }, menu)
+   offlineButton.click = offlineMode
+   local hostButton = gui:button("Host Online Game", {
+                                    y = 60,
+                                    w = 200,
+                                    h = 50
+                                                     }, menu)
+   hostButton.click = hostMode
+   local joinButton = gui:button("Join Online Game", {
+                                    y = 120,
+                                    w = 200,
+                                    h = 50
+                                                     }, menu)
+   joinButton = joinMode
+end
+
+function offlineMode()
+   gamemode = "foreplay"
+   initializeGameboard()
 end
 
 function initializeGameboard()
