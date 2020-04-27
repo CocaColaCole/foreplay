@@ -7,15 +7,16 @@ net.mode = nil
 net.clients = {}
 local tcp
 
-function net.joinGame()
+function net.joinGame(hostname)
    tcp = socket.tcp()
-   local ok, err = tcp:connect("localhost", 8008) -- TODO allow the user to set this
+   local ok, err = tcp:connect(hostname, 8008) -- TODO allow the user to set this
    if err then
       error(err)
    end
    tcp:settimeout(0)
    net.connected = true
    net.mode = "client"
+   print("connected to server!")
 end
 
 function net.hostGame()
@@ -29,6 +30,7 @@ end
 
 function net.acceptNewClients()
    local done = false
+   local joinEvents = {}
    repeat
       client, err = tcp:accept()
       if err then
@@ -40,15 +42,17 @@ function net.acceptNewClients()
       else
          local ip, port = client:getpeername()
          client:settimeout(0)
-         lume.push(clients, {ip=ip, port=port, socket=client})
+         lume.push(net.clients, {ip=ip, port=port, socket=client})
+         lume.push(joinEvents, {action="join", ip=ip, port=port})
          print(string.format("accepted new client %s:%d", ip, port))
       end
    until done
+   return joinEvents
 end
 
-function net.propogate(packet)
+function net.broadcast(packet)
    for _, client in ipairs(net.clients) do
-      client.socket.send(packet)
+      client.socket:send(packet)
    end
 end
 
@@ -57,18 +61,21 @@ function net.updatePosition(networkedObject)
                                 networkedObject.id,
                                 networkedObject.x,
                                 networkedObject.y)
-   if mode == "client" then
+   if net.mode == "client" then
       tcp:send(packet)
-   elseif mode == "server" then
+   elseif net.mode == "server" then
       net.broadcast(packet)
    end
 end
 
-function net.getEvents()
-   if net.connected and net.mode == "server" then
-      net.acceptNewClients()
-   end
-   events = {}
+function net.sendGamestate(gamestate, ip, port)
+   local client = lume.first(lume.filter(net.clients, function(x) return ip == x.ip and port == x.port end))
+   local packet = string.format("gamestate: <%s>\r\n", gamestate)
+   client.socket:send(packet)
+end
+
+function net.clientGetEvents()
+   local events = {}
    while true do
       val, err = tcp:receive()
       if err == "timeout" or err == "closed" then
@@ -82,6 +89,28 @@ function net.getEvents()
    return events
 end
 
+function net.serverGetEvents(dt)
+   local events = net.acceptNewClients()
+   for _, client in ipairs(net.clients) do
+      local done = false
+      repeat
+         local val, err = client.socket:receive()
+         if err == "timeout" or err == "closed" then
+            break
+         elseif val then
+            local event = net.parseEvent(val)
+            event.ip = client.ip
+            event.port = client.port
+            lume.push(events, event)
+         else
+            error(err)
+         end
+      until done
+   end
+   return events
+end
+         
+
 function net.parseEvent(val)
    action, values = string.match(val, "(.*): <(.*)>")
    if not action then
@@ -90,6 +119,9 @@ function net.parseEvent(val)
    if action == "move" then
       id, x, y = string.match(values, "(0x%x+), (%d+), (%d+)")
       return {action="move", id=tonumber(id), x=tonumber(x), y=tonumber(y)}
+   end
+   if action == "gamestate" then
+      return {action="gamestate", gamestate=values}
    end
 end
 

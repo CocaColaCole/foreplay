@@ -7,6 +7,9 @@ local net = require('network')
 -- Gameboard setup
 math.randomseed(os.time())
 local gameObjects = {}
+function objectById(id)
+   return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
+end
 local nextId = 1
 local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
                      {350,225},{300,300},{350,375},{450,375},{500,300},{450,225},{400,300}} --spiral layout
@@ -67,6 +70,13 @@ function love.update(dt)
    if gamemode == "menu" then
       gui:update(dt)
    elseif gamemode == "foreplay" then
+      if net.connected then
+         if net.mode == "server" then
+            serverEventHandler(dt)
+         else
+            clientEventHandler(dt)
+         end
+      end
       lume.each(gameObjects, moveIfGrabbed)
    end
 end
@@ -80,6 +90,34 @@ function moveIfGrabbed(obj)
    end
 end
 
+function serverEventHandler(dt)
+   events = net.serverGetEvents(dt)
+   for _, event in ipairs(events) do
+      if event.action == "join" then
+         net.sendGamestate(lume.serialize(gameObjects), event.ip, event.port)
+      end
+      if event.action == "move" then
+         obj = objectById(event.id)
+         obj.x = event.x
+         obj.y = event.y
+         net.updatePosition(obj)
+      end
+   end
+end
+
+function clientEventHandler(dt)
+   events = net.clientGetEvents(dt)
+   for _, event in ipairs(events) do
+      if event.action == "gamestate" then
+         gameObjects = lume.deserialize(event.gamestate)
+      end
+      if event.action == "move" then
+         local obj = objectById(event.id)
+         obj.x = event.x
+         obj.y = event.y
+      end
+   end
+end
 
 function love.draw()
    if gamemode == "menu" then
@@ -191,7 +229,7 @@ end
 
 function joinMode(hostname)
    gamemode = "foreplay"
-   net.joinGame()
+   net.joinGame(hostname)
    -- Board state will be sent by server
 end
 
@@ -201,7 +239,6 @@ function initializeGameboard()
         table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1],hexLocation[i][2],100,100,true))
     end
     local harborMapping = unpackDistribution(harborDistribution,true)
-    --print(#harborMapping)
     local j = 1
     for i = 1, 18 do
         if i % 2 == 1 then
@@ -242,7 +279,6 @@ function initializeGameboard()
       table.insert(gameObjects, newGrabbableObject("building", building, building,200,50,h,w,true))
     end
 end
-
 
 function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
    local grabbableObject = {}
