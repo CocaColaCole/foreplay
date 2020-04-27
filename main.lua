@@ -10,6 +10,8 @@ local gameObjects = {}
 local nextId = 1
 local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
                      {350,225},{300,300},{350,375},{450,375},{500,300},{450,225},{400,300}} --spiral layout
+local harborLocation = {{250,75},{200,150},{150,225},{100,300},{150,375},{200,450},{250,525},{350,525},{450,525},{550,525},
+                        {600,450},{650,375},{700,300},{650,225},{600,150},{550,75},{450,75},{350,75}}
 --[[                    {{300,150},{400,150},{500,150},
                 {250,225},{350,225},{450,225},{550,225},
             {200,300},{300,300},{400,300},{500,300},{600,300},
@@ -18,6 +20,7 @@ local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450}
 local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
 local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
+local harborDistribution = {{"wood",1},{"sheep",1},{"wheat",1},{"brick",1},{"stone",1},{"question",4}}
 local buildingDistribution = {{"path",15},{"settlement",5},{"city",4}}
 local numberMapping = {5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11}
 function unpackDistribution(distribution, shuffle)
@@ -174,6 +177,17 @@ function initializeGameboard()
         table.insert(gameObjects, newGrabbableObject("terrainHex", love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
         if terrain ~= "desert" then
           table.insert(gameObjects,newScaleableText("number",numberMapping[1],hexLocation[i][1],hexLocation[i][2],50,50,true,0))
+        end
+    end
+    local harborMapping = unpackDistribution(harborDistribution,true)
+    --print(#harborMapping)
+    local j = 1
+    for i = 1, 18 do
+        if i % 2 == 1 then
+          table.insert(gameObjects, newGrabbableObject("harbor", love.graphics.newImage("resources/"..harborMapping[j].."-harbor.png"),love.graphics.newImage("resources/water-hex.png"),harborLocation[i][1],harborLocation[i][2],100,100,true))
+          j = j + 1
+        else
+          table.insert(gameObjects, newGrabbableObject("water", love.graphics.newImage("resources/water-hex.png"),love.graphics.newImage("resources/water-hex.png"),harborLocation[i][1],harborLocation[i][2],100,100,true))
         end
     end
     local devCardMapping = unpackDistribution(devCardDistribution,true)
