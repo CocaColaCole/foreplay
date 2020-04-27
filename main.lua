@@ -205,10 +205,10 @@ function initializeGameboard()
     local j = 1
     for i = 1, 18 do
         if i % 2 == 1 then
-          table.insert(gameObjects, newGrabbableObject("harbor", love.graphics.newImage("resources/"..harborMapping[j].."-harbor.png"),love.graphics.newImage("resources/water-hex.png"),harborLocation[i][1],harborLocation[i][2],100,100,true))
+          table.insert(gameObjects, newGrabbableObject("harbor", harborMapping[j].."-harbor", "water-hex", harborLocation[i][1],harborLocation[i][2],100,100,true))
           j = j + 1
         else
-          table.insert(gameObjects, newGrabbableObject("water", love.graphics.newImage("resources/water-hex.png"),love.graphics.newImage("resources/water-hex.png"),harborLocation[i][1],harborLocation[i][2],100,100,true))
+          table.insert(gameObjects, newGrabbableObject("water", "water-hex", "water-hex", harborLocation[i][1],harborLocation[i][2],100,100,true))
         end
     end
     local devCardMapping = unpackDistribution(devCardDistribution,true)
