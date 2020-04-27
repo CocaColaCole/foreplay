@@ -61,10 +61,9 @@ function love.load()
    initializeMenu()
 end
 
-local cursorx = 0
-local cursory = 0
-local mouseclicked = 0
+
 local dice = 0
+local specialClick = false
 
 function love.update(dt)
    if gamemode == "menu" then
@@ -135,16 +134,16 @@ function love.mousepressed(x,y,button,istouch,presses)
    if gamemode == "menu" then
       gui:mousepress(x, y, button)
    elseif gamemode == "foreplay" then
+      -- Racer X! Racer X!
       local cursorx, cursory = love.mouse.getPosition()
       local grabbedObjIdx
       for i, obj in lume.ripairs(gameObjects) do -- go in reverse so we grab the top objects first
          if button == 1 and aboveGrabbableObject(obj, cursorx, cursory) then
-            mouseclicked = 1
             if obj.grabbable then
                obj.grabbed = true
                obj.grabOffsetx = obj.x-love.mouse.getX()
                obj.grabOffsety = obj.y-love.mouse.getY()
-               if presses == 2 then
+               if presses >= 2 then
                   if not obj.flipped then
                      obj.flipped = true
                   else
@@ -181,6 +180,20 @@ end
 function love.keypressed(key, code, isrepeat)
    if gamemode == 'menu' then
       gui:keypress(key)
+   elseif gamemode == 'foreplay' then
+      if key == 'rshift' or key == 'lshift' then
+         specialClick = true
+      end
+   end
+end
+
+function love.keyreleased(key, code, isrepeat)
+   if gamemode == 'menu' then
+      -- TODO
+   elseif gamemode == 'foreplay' then
+      if key == 'rshift' or key == 'lshift' then
+         specialClick = false
+      end
    end
 end
 
@@ -317,6 +330,10 @@ function drawGrabbableObject (grabbableObject)
 end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
+   -- Don't grab if it's a special type and we dont have special keys enabled
+   if not specialClick and lume.find({"terrainHex", "water", "harbor"}, grabbableObject.pieceType) then
+      return false
+   end
   if grabbableObject.centered then
     return cursorx > grabbableObject.x - grabbableObject.width/2 and
       cursorx < grabbableObject.x + grabbableObject.width/2 and
@@ -338,6 +355,6 @@ end
 function rollDice()
   local dicePossibilities = {1,2,3,4,5,6}
   local diceRoll = 0
-  diceRoll = lume.randomchoice(dicePossibilities) + lume.randomchoice(dicePossibilities)
+  diceRoll = lume.randomnnchoice(dicePossibilities) + lume.randomchoice(dicePossibilities)
   return diceRoll
 end
