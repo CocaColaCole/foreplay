@@ -19,7 +19,6 @@ local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"st
 local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
 local buildingDistribution = {{"path",15},{"settlement",5},{"city",4}}
-local numberMapping = {5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11}
 function unpackDistribution(distribution, shuffle)
   unpackedDistribution = {}
   for _, item in ipairs(distribution) do
@@ -34,12 +33,24 @@ function unpackDistribution(distribution, shuffle)
 end
 
 
+-- Preload graphics
+local graphics = {}
+function preloadGraphics()
+   local files = love.filesystem.getDirectoryItems("resources")
+   for _, file in ipairs(files) do
+      local name = string.match(file, "(.*)%.png")
+      if name then
+         graphics[name] = love.graphics.newImage("resources/" .. file)
+      end
+   end
+end
 
 --local hexChoices = {"wood","wood","wood","wood","sheep","sheep","sheep","sheep","wheat","wheat","wheat","wheat","brick","brick","brick","stone","stone","stone","desert"}
 
 local gamemode
 
 function love.load()
+   preloadGraphics()
    gamemode = "menu"
    initializeMenu()
 end
@@ -72,11 +83,6 @@ function love.draw()
       gui:draw()
    elseif gamemode == "foreplay" then
       for i, obj in ipairs(gameObjects) do
-         if obj.pieceType == "number" then
-            love.graphics.setColor(0,0,0)
-         else
-            love.graphics.reset()
-         end
          drawGrabbableObject(obj)
       end
       love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
@@ -189,14 +195,11 @@ end
 function initializeGameboard()
     local terrainHexMapping = unpackDistribution(terrainDistribution,true)
     for i, terrain in lume.ripairs(terrainHexMapping) do
-        table.insert(gameObjects, newGrabbableObject("terrainHex", love.graphics.newImage("resources/"..terrain.."-hex.png"),love.graphics.newImage("resources/water-hex.png"),hexLocation[i][1],hexLocation[i][2],100,100,true))
-        if terrain ~= "desert" then
-          table.insert(gameObjects,newScaleableText("number",numberMapping[1],hexLocation[i][1],hexLocation[i][2],50,50,true,0))
-        end
+        table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1],hexLocation[i][2],100,100,true))
     end
     local devCardMapping = unpackDistribution(devCardDistribution,true)
     for i, card in lume.ripairs(devCardMapping) do
-      table.insert(gameObjects, newGrabbableObject("card", love.graphics.newImage("resources/round-shield.png"),love.graphics.newImage("resources/"..card..".png"),750,550,100,100,true))
+      table.insert(gameObjects, newGrabbableObject("card", "round-shield", card,750,550,100,100,true))
     end
     local resourceMapping = unpackDistribution(resourceDistribution,false)
     for i, resource in lume.ripairs(resourceMapping) do
@@ -212,7 +215,7 @@ function initializeGameboard()
         else --stone
           ypos = 450
         end
-        table.insert(gameObjects, newGrabbableObject("card", love.graphics.newImage("resources/"..resource..".png"),love.graphics.newImage("resources/honeycomb.png"),750,ypos, 100, 100, true))
+        table.insert(gameObjects, newGrabbableObject("card", resource, "honeycomb",750,ypos, 100, 100, true))
     end
     local buildingMapping = unpackDistribution(buildingDistribution)
     for i, building in ipairs(buildingMapping) do
@@ -222,9 +225,8 @@ function initializeGameboard()
         h = 5
         w = 50
       end
-      table.insert(gameObjects, newGrabbableObject(building, love.graphics.newImage("resources/"..building..".png"),love.graphics.newImage("resources/"..building..".png"),200,50,h,w,true))
+      table.insert(gameObjects, newGrabbableObject("building", building, building,200,50,h,w,true))
     end
-
 end
 
 
@@ -232,17 +234,17 @@ function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
    local grabbableObject = {}
    grabbableObject.pieceType = pieceType
    grabbableObject.centered = centered
-   grabbableObject.image  = image
+   grabbableObject.image = image
    grabbableObject.back = back
-   grabbableObject.sx = w/image:getWidth()
-   grabbableObject.sy = h/image:getHeight()
+   grabbableObject.sx = w/graphics[image]:getWidth()
+   grabbableObject.sy = h/graphics[image]:getHeight()
    grabbableObject.ox = 0
    grabbableObject.oy = 0
    grabbableObject.width = w
    grabbableObject.height = h
    if centered == true then
-      grabbableObject.ox = image:getWidth()/2
-      grabbableObject.oy = image:getWidth()/2
+      grabbableObject.ox = graphics[image]:getWidth()/2
+      grabbableObject.oy = graphics[image]:getWidth()/2
    end
    grabbableObject.rotation = rot
    grabbableObject.x = x
@@ -254,35 +256,11 @@ function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
    return grabbableObject
 end
 
-function newScaleableText (pieceType, text, x, y, w, h, centered, rot)
-   local scaleableText = {}
-   scaleableText.font = love.graphics.newFont("resources/arial.ttf")
-   scaleableText.pieceType = pieceType
-   scaleableText.centered = centered
-   scaleableText.text = text
-   scaleableText.image  = love.graphics.newText(scaleableText.font,text)
-   scaleableText.sx = w/scaleableText.font:getWidth(text)
-   scaleableText.sy = h/scaleableText.font:getHeight(text)
-   scaleableText.ox = 0
-   scaleableText.oy = 0
-   scaleableText.width = w
-   scaleableText.height = h
-   if centered == true then
-      scaleableText.ox = scaleableText.font:getWidth(text)/2
-      scaleableText.oy = scaleableText.font:getHeight(text)/2
-   end
-   scaleableText.rotation = rot
-   scaleableText.x = x
-   scaleableText.y = y
-   scaleableText.grabbable = false
-   return scaleableText
-end
-
 function drawGrabbableObject (grabbableObject)
-    if grabbableObject.flipped then
-      love.graphics.draw(grabbableObject.back, grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
-    else
-      love.graphics.draw(grabbableObject.image, grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
+   if grabbableObject.flipped then
+       love.graphics.draw(graphics[grabbableObject.back], grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
+   else
+      love.graphics.draw(graphics[grabbableObject.image], grabbableObject.x, grabbableObject.y , grabbableObject.rotation, grabbableObject.sx, grabbableObject.sy, grabbableObject.ox, grabbableObject.oy)
     end
 end
 
