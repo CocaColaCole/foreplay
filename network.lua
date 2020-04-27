@@ -9,7 +9,7 @@ local tcp
 
 function net.joinGame(hostname)
    tcp = socket.tcp()
-   local ok, err = tcp:connect(hostname, 8008) -- TODO allow the user to set this
+   local ok, err = tcp:connect(hostname, 8008)
    if err then
       error(err)
    end

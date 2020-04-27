@@ -208,6 +208,7 @@ function initializeMenu()
                                      w = 200,
                                      h = 50
                                               }, menu)
+   joinHostname.value = "localhost"
    local joinButton = gui:button("Join Online Game", {
                                     y = 180,
                                     w = 200,
