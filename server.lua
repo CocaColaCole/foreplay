@@ -2,38 +2,7 @@ local socket = require("socket")
 local lume = require("lume")
 
 local tcp
-local clients = {}
 
-function main()
-   tcp = socket.tcp()
-   tcp:bind("*", 8008)
-   tcp:settimeout(0)
-   tcp:listen()
-   while true do
-      acceptNewClients()
-      local events = getEvents()
-      lume.each(events, handleEvent)
-   end
-end
-
-function acceptNewClients()
-   local done = false
-   repeat
-      client, err = tcp:accept()
-      if err then
-         if err == "timeout" then
-            done = true
-         else
-            error(err)
-         end
-      else
-         local ip, port = client:getpeername()
-         client:settimeout(0)
-         lume.push(clients, {ip=ip, port=port, socket=client})
-         print(string.format("accepted new client %s:%d", ip, port))
-      end
-   until done
-end
 
 function getEvents()
    local events = {}
@@ -84,6 +53,5 @@ function handleEvent(event)
       end
    end
 end
-
 
 main()
