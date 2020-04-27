@@ -2,7 +2,7 @@
 local lume = require('lume')
 local gui = require('gspot')
 -- Local imports
-local client = require('client')
+local net = require('network')
 
 -- Gameboard setup
 math.randomseed(os.time())
@@ -42,15 +42,12 @@ local gamemode
 function love.load()
    gamemode = "menu"
    initializeMenu()
-   -- initializeGameboard()
-   -- client.connect()
 end
 
 local cursorx = 0
 local cursory = 0
 local mouseclicked = 0
 local dice = 0
-
 
 function love.update(dt)
    if gamemode == "menu" then
@@ -60,13 +57,11 @@ function love.update(dt)
    end
 end
 
-
-
 function moveIfGrabbed(obj)
    if obj.grabbed then
       moveGrabbableObject(obj, love.mouse.getX() + obj.grabOffsetx, love.mouse.getY() + obj.grabOffsety)
-      if client.connected then -- If this is a networked game send the new coords
-         client.updatePosition(obj)
+      if net.connected then -- If this is a networked game send the new coords
+         net.updatePosition(obj)
       end
    end
 end
@@ -135,9 +130,15 @@ function love.mousereleased(x,y,button,istouch,presses)
    end
 end
 
-function love.keypressed(key)
-   if gui.focus then
+function love.keypressed(key, code, isrepeat)
+   if gamemode == 'menu' then
       gui:keypress(key)
+   end
+end
+
+function love.textinput(key)
+   if gamemode == "menu" then
+      gui:textinput(key)
    end
 end
 
@@ -155,17 +156,34 @@ function initializeMenu()
                                     h = 50
                                                      }, menu)
    hostButton.click = hostMode
+   local joinHostname = gui:input("Hostname", {
+                                     y = 120,
+                                     w = 200,
+                                     h = 50
+                                              }, menu)
    local joinButton = gui:button("Join Online Game", {
-                                    y = 120,
+                                    y = 180,
                                     w = 200,
                                     h = 50
                                                      }, menu)
-   joinButton = joinMode
+   joinButton.click = function() joinMode(joinHostname.value) end
 end
 
 function offlineMode()
    gamemode = "foreplay"
    initializeGameboard()
+end
+
+function hostMode()
+   gamemode = "foreplay"
+   net.hostGame()
+   initializeGameboard()
+end
+
+function joinMode(hostname)
+   gamemode = "foreplay"
+   net.joinGame()
+   -- Board state will be sent by server
 end
 
 function initializeGameboard()
@@ -259,10 +277,6 @@ function newScaleableText (pieceType, text, x, y, w, h, centered, rot)
    scaleableText.grabbable = false
    return scaleableText
 end
-
---function drawScaleableText (scaleableText)
-  --love.graphics.print(scaleableText.text,scaleableText.x,scaleableText.y,scaleableText.rotation,scaleableText.sx,scaleableText.sy,scaleableText.ox,scaleableText.oy)
---end
 
 function drawGrabbableObject (grabbableObject)
     if grabbableObject.flipped then
