@@ -109,6 +109,7 @@ function clientEventHandler(dt)
    events = net.clientGetEvents(dt)
    for _, event in ipairs(events) do
       if event.action == "gamestate" then
+         print("deserializing gamestate")
          gameObjects = lume.deserialize(event.gamestate)
       end
       if event.action == "move" then

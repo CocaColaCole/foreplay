@@ -13,7 +13,11 @@ function net.joinGame(hostname)
    if err then
       error(err)
    end
-   tcp:settimeout(0)
+   -- WARNING!!!! MASSIVE HACK!!!!
+   -- So the linux client times out because the gamestate is typically somthing crazy like 40kb
+   -- Client needs to wait A FULL SECOND for the FIRST MESSAGE only
+   -- (I'll fix this later)
+   tcp:settimeout(1)
    net.connected = true
    net.mode = "client"
    print("connected to server!")
@@ -121,6 +125,8 @@ function net.parseEvent(val)
       return {action="move", id=tonumber(id), x=tonumber(x), y=tonumber(y)}
    end
    if action == "gamestate" then
+      -- WARNING!!!! MASSIVE HACK!!!!
+      tcp:settimeout(0)
       return {action="gamestate", gamestate=values}
    end
 end
