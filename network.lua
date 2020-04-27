@@ -14,7 +14,7 @@ function net.joinGame()
       error(err)
    end
    tcp:settimeout(0)
-   net.connecpted = true
+   net.connected = true
    net.mode = "client"
 end
 
