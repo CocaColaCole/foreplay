@@ -25,6 +25,7 @@ local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
 local harborDistribution = {{"wood",1},{"sheep",1},{"wheat",1},{"brick",1},{"stone",1},{"question",4}}
 local buildingDistribution = {{"path",15},{"settlement",5},{"city",4}}
+local numberMapping = {5,2,6,3,8,10,9,12,11,4,8,10,9,4,5,6,3,11}
 function unpackDistribution(distribution, shuffle)
   unpackedDistribution = {}
   for _, item in ipairs(distribution) do
@@ -252,7 +253,13 @@ function initializeGameboard()
     local terrainHexMapping = unpackDistribution(terrainDistribution,true)
     for i, terrain in lume.ripairs(terrainHexMapping) do
         table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1],hexLocation[i][2],100,100,true))
+        if terrain ~= "desert" then
+          table.insert(gameObjects,newGrabbableObject("numberChit",numberMapping[1].."-chit", "0-chit",hexLocation[i][1],hexLocation[i][2],50,50,true,0))
+          table.remove(numberMapping,1)
+        end
+        table.remove(terrainHexMapping,i)
     end
+    table.insert(gameObjects,newGrabbableObject("thief","thief","thief",300,50,50,50,true))
     local harborMapping = unpackDistribution(harborDistribution,true)
     local j = 1
     for i = 1, 18 do
@@ -331,7 +338,7 @@ end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
    -- Don't grab if it's a special type and we dont have special keys enabled
-   if not specialClick and lume.find({"terrainHex", "water", "harbor"}, grabbableObject.pieceType) then
+   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit"}, grabbableObject.pieceType) then
       return false
    end
   if grabbableObject.centered then
