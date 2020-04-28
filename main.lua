@@ -10,6 +10,9 @@ local gameObjects = {}
 function objectById(id)
    return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
 end
+function objectsByType(pieceType)
+   return lume.filter(gameObjects, function(obj) return obj.pieceType == pieceType) end)
+end
 local nextId = 1
 --local diceRoll1 = 1
 --local diceRoll2 = 1
@@ -121,6 +124,14 @@ function clientEventHandler(dt)
       if event.action == "gamestate" then
          print("deserializing gamestate")
          gameObjects = lume.deserialize(event.gamestate)
+         local dice = objectsByType("dice")
+         if string.match(dice[1].image, "white") then
+            dice1 = dice[1]
+            dice2 = dice[2]
+         else
+            dice2 = dice[1]
+            dice1 = dice[2]
+         end
       end
       if event.action == "move" then
          local obj = objectById(event.id)
