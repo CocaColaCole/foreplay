@@ -100,6 +100,8 @@ function serverEventHandler(dt)
          obj = objectById(event.id)
          obj.x = event.x
          obj.y = event.y
+         obj.rotation = event.rotation
+         obj.flipped = event.flipped
          net.updatePosition(obj)
       end
    end
@@ -116,6 +118,8 @@ function clientEventHandler(dt)
          local obj = objectById(event.id)
          obj.x = event.x
          obj.y = event.y
+         obj.rotation = event.rotation
+         obj.flipped = event.flipped
       end
    end
 end
@@ -152,11 +156,13 @@ function love.mousepressed(x,y,button,istouch,presses)
                   end
                end
                grabbedObjIdx = i
+               if obj.pieceType == "dice" and presses == 2 then
+                  obj.text = rollDice()
+                  obj.image = love.graphics.newText(love.graphics.newFont("resources/arial.ttf"),obj.text)
+               elseif obj.pieceType == "building" and presses == 2 then
+                  obj.rotation = obj.rotation + math.rad(120)
+               end
                break
-            end
-            if obj.pieceType == "dice" and presses == 2 then
-               obj.text = rollDice()
-               obj.image = love.graphics.newText(love.graphics.newFont("resources/arial.ttf"),obj.text)
             end
          end
       end
@@ -256,10 +262,11 @@ function initializeGameboard()
         if terrain ~= "desert" then
           table.insert(gameObjects,newGrabbableObject("numberChit",numberMapping[1].."-chit", "0-chit",hexLocation[i][1],hexLocation[i][2],50,50,true,0))
           table.remove(numberMapping,1)
+        else
+          table.insert(gameObjects,newGrabbableObject("thief","thief","thief",hexLocation[i][1],hexLocation[i][2],50,50,true))
         end
         table.remove(terrainHexMapping,i)
     end
-    table.insert(gameObjects,newGrabbableObject("thief","thief","thief",300,50,50,50,true))
     local harborMapping = unpackDistribution(harborDistribution,true)
     local j = 1
     for i = 1, 18 do
@@ -318,7 +325,11 @@ function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
       grabbableObject.ox = graphics[image]:getWidth()/2
       grabbableObject.oy = graphics[image]:getWidth()/2
    end
-   grabbableObject.rotation = rot
+   if rot then
+     grabbableObject.rotation = rot
+   else
+     grabbableObject.rotation = 0
+   end
    grabbableObject.x = x
    grabbableObject.y = y
    grabbableObject.grabbed = false

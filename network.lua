@@ -61,10 +61,12 @@ function net.broadcast(packet)
 end
 
 function net.updatePosition(networkedObject)
-   local packet = string.format("move: <0x%x, %d, %d>\r\n",
+   local packet = string.format("move: <0x%x, %d, %d, %.1f, %d>\r\n",
                                 networkedObject.id,
                                 networkedObject.x,
-                                networkedObject.y)
+                                networkedObject.y,
+                                networkedObject.rotation,
+                                networkedObject.flipped and 1 or 0)
    if net.mode == "client" then
       tcp:send(packet)
    elseif net.mode == "server" then
@@ -113,7 +115,7 @@ function net.serverGetEvents(dt)
    end
    return events
 end
-         
+
 
 function net.parseEvent(val)
    action, values = string.match(val, "(.*): <(.*)>")
@@ -121,8 +123,8 @@ function net.parseEvent(val)
       return {action="unknown"}
    end
    if action == "move" then
-      id, x, y = string.match(values, "(0x%x+), (%d+), (%d+)")
-      return {action="move", id=tonumber(id), x=tonumber(x), y=tonumber(y)}
+      id, x, y, rotation, flipped = string.match(values, "(0x%x+), (%d+), (%d+), (%d+%.%d), (%d)")
+      return {action="move", id=tonumber(id), x=tonumber(x), y=tonumber(y), rotation=tonumber(rotation), flipped=tonumber(flipped)==1}
    end
    if action == "gamestate" then
       -- WARNING!!!! MASSIVE HACK!!!!
