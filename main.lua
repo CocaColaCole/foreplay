@@ -11,6 +11,10 @@ function objectById(id)
    return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
 end
 local nextId = 1
+--local diceRoll1 = 1
+--local diceRoll2 = 1
+local dice1
+local dice2
 local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
                      {350,225},{300,300},{350,375},{450,375},{500,300},{450,225},{400,300}} --spiral layout
 local harborLocation = {{250,75},{200,150},{150,225},{100,300},{150,375},{200,450},{250,525},{350,525},{450,525},{550,525},
@@ -137,6 +141,11 @@ function love.draw()
       gui:draw()
    elseif gamemode == "foreplay" then
       for i, obj in ipairs(gameObjects) do
+         if obj.pieceType == "building" then
+           love.graphics.setColor(obj.r,obj.g,obj.b)
+         else
+           love.graphics.reset()
+         end
          drawGrabbableObject(obj)
       end
       love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
@@ -165,8 +174,7 @@ function love.mousepressed(x,y,button,istouch,presses)
                end
                grabbedObjIdx = i
                if obj.pieceType == "dice" and presses == 2 then
-                  obj.text = rollDice()
-                  obj.image = love.graphics.newText(love.graphics.newFont("resources/arial.ttf"),obj.text)
+                  rollDice()
                elseif obj.pieceType == "building" and presses == 2 then
                   obj.rotation = obj.rotation + math.rad(120)
                end
@@ -264,6 +272,10 @@ function joinMode(hostname)
 end
 
 function initializeGameboard()
+    dice1 = newGrabbableObject("dice","white-1","white-1",25,25,50,50,true)
+    table.insert(gameObjects, dice1)
+    dice2 = newGrabbableObject("dice","black-1","black-1",75,25,50,50,true)
+    table.insert(gameObjects, dice2)
     local terrainHexMapping = unpackDistribution(terrainDistribution,true)
     for i, terrain in lume.ripairs(terrainHexMapping) do
         table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1],hexLocation[i][2],100,100,true))
@@ -306,18 +318,24 @@ function initializeGameboard()
         table.insert(gameObjects, newGrabbableObject("card", resource, "honeycomb",750,ypos, 100, 100, true))
     end
     local buildingMapping = unpackDistribution(buildingDistribution)
-    for i, building in ipairs(buildingMapping) do
-      local h = 30
-      local w = 30
-      if building == "path" then
-        h = 5
-        w = 50
+    local colorMapping =  {{0/255,255/255,0/255},{255/255,165/255,0/255},{160/255,32/255,240/255},{150/255,75/255,0/255}}
+    for k = 1, 4 do
+      local r = colorMapping[k][1]
+      local g = colorMapping[k][2]
+      local b = colorMapping[k][3]
+      for i, building in ipairs(buildingMapping) do
+        local h = 30
+        local w = 30
+        if building == "path" then
+          w = 15
+          h = 50
+        end
+        table.insert(gameObjects, newGrabbableObject("building", building, building,200,50,w,h,true,0,r,g,b))
       end
-      table.insert(gameObjects, newGrabbableObject("building", building, building,200,50,h,w,true))
     end
 end
 
-function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
+function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot , r, g, b)
    local grabbableObject = {}
    grabbableObject.pieceType = pieceType
    grabbableObject.centered = centered
@@ -329,6 +347,9 @@ function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
    grabbableObject.oy = 0
    grabbableObject.width = w
    grabbableObject.height = h
+   grabbableObject.r = r
+   grabbableObject.g = g
+   grabbableObject.b = b
    if centered == true then
       grabbableObject.ox = graphics[image]:getWidth()/2
       grabbableObject.oy = graphics[image]:getHeight()/2
@@ -357,7 +378,7 @@ end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
    -- Don't grab if it's a special type and we dont have special keys enabled
-   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit"}, grabbableObject.pieceType) then
+   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit", "dice"}, grabbableObject.pieceType) then
       return false
    end
   if grabbableObject.centered then
@@ -380,7 +401,8 @@ end
 
 function rollDice()
   local dicePossibilities = {1,2,3,4,5,6}
-  local diceRoll = 0
-  diceRoll = lume.randomnnchoice(dicePossibilities) + lume.randomchoice(dicePossibilities)
-  return diceRoll
+  local diceRoll1 = lume.randomchoice(dicePossibilities)
+  local diceRoll2 =  lume.randomchoice(dicePossibilities)
+  dice1.image = "white-"..diceRoll1
+  dice2.image = "black-"..diceRoll2
 end
