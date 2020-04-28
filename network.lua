@@ -80,6 +80,15 @@ function net.sendGamestate(gamestate, ip, port)
    client.socket:send(packet)
 end
 
+function net.rollDice(d1, d2)
+   local packet = string.format("roll: <%d, %d>\r\n", d1, d2)
+   if net.mode == "client" then
+      tcp:send(packet)
+   elseif net.mode == "server" then
+      net.broadcast(packet)
+   end
+end
+
 function net.clientGetEvents()
    local events = {}
    while true do
@@ -125,6 +134,10 @@ function net.parseEvent(val)
    if action == "move" then
       id, x, y, rotation, flipped = string.match(values, "(0x%x+), (%d+), (%d+), (%d+%.%d), (%d)")
       return {action="move", id=tonumber(id), x=tonumber(x), y=tonumber(y), rotation=tonumber(rotation), flipped=tonumber(flipped)==1}
+   end
+   if action == "roll" then
+      d1, d2 = string.match(values, "(%d), (%d)")
+      return {action="roll", d1=tonumber(d1), d2=tonumber(d2)}
    end
    if action == "gamestate" then
       -- WARNING!!!! MASSIVE HACK!!!!

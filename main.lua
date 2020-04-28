@@ -11,7 +11,7 @@ function objectById(id)
    return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
 end
 function objectsByType(pieceType)
-   return lume.filter(gameObjects, function(obj) return obj.pieceType == pieceType) end)
+   return lume.filter(gameObjects, function(obj) return obj.pieceType == pieceType end)
 end
 local nextId = 1
 --local diceRoll1 = 1
@@ -115,6 +115,11 @@ function serverEventHandler(dt)
            net.updatePosition(obj)
          end
       end
+      if event.action == "roll" then
+         dice1.image = "white-"..event.d1
+         dice2.image = "black-"..event.d2
+         net.rollDice(event.d1, event.d2)
+      end
    end
 end
 
@@ -143,6 +148,10 @@ function clientEventHandler(dt)
            lume.remove(gameObjects, obj)
            lume.push(gameObjects, obj)
          end
+      end
+      if event.action == "roll" then
+         dice1.image = "white-"..event.d1
+         dice2.image = "black-"..event.d2
       end
    end
 end
@@ -413,7 +422,8 @@ end
 function rollDice()
   local dicePossibilities = {1,2,3,4,5,6}
   local diceRoll1 = lume.randomchoice(dicePossibilities)
-  local diceRoll2 =  lume.randomchoice(dicePossibilities)
+  local diceRoll2 = lume.randomchoice(dicePossibilities)
   dice1.image = "white-"..diceRoll1
   dice2.image = "black-"..diceRoll2
+  net.rollDice(diceRoll1, diceRoll2)
 end
