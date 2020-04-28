@@ -98,11 +98,15 @@ function serverEventHandler(dt)
       end
       if event.action == "move" then
          obj = objectById(event.id)
-         obj.x = event.x
-         obj.y = event.y
-         obj.rotation = event.rotation
-         obj.flipped = event.flipped
-         net.updatePosition(obj)
+         if obj then
+           obj.x = event.x
+           obj.y = event.y
+           obj.rotation = event.rotation
+           obj.flipped = event.flipped
+           lume.remove(gameObjects, obj)
+           lume.push(gameObjects, obj)
+           net.updatePosition(obj)
+         end
       end
    end
 end
@@ -116,10 +120,14 @@ function clientEventHandler(dt)
       end
       if event.action == "move" then
          local obj = objectById(event.id)
-         obj.x = event.x
-         obj.y = event.y
-         obj.rotation = event.rotation
-         obj.flipped = event.flipped
+         if obj then
+           obj.x = event.x
+           obj.y = event.y
+           obj.rotation = event.rotation
+           obj.flipped = event.flipped
+           lume.remove(gameObjects, obj)
+           lume.push(gameObjects, obj)
+         end
       end
    end
 end
@@ -323,7 +331,7 @@ function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot)
    grabbableObject.height = h
    if centered == true then
       grabbableObject.ox = graphics[image]:getWidth()/2
-      grabbableObject.oy = graphics[image]:getWidth()/2
+      grabbableObject.oy = graphics[image]:getHeight()/2
    end
    if rot then
      grabbableObject.rotation = rot
