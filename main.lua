@@ -7,15 +7,19 @@ local net = require('network')
 -- Setup numeric addressing
 local nextId = 1
 
--- Gameboard setup
-math.randomseed(os.time())
-local gameObjects = {}
+-- Some utility functions
+
 function objectById(id)
    return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
 end
 function objectsByType(pieceType)
    return lume.filter(gameObjects, function(obj) return obj.pieceType == pieceType end)
 end
+
+
+-- Gameboard setup
+math.randomseed(os.time())
+local gameObjects = {}
 local dice1
 local dice2
 local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
