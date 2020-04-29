@@ -379,7 +379,7 @@ function initializeGameboard()
             w = 15
             h = 50
          end
-         table.insert(gameObjects, newGrabbableObject("building", building, building,200,50,w,h,true,0,r,g,b))
+         table.insert(gameObjects, newGrabbableObject("building", building, building,500,100,w,h,true,0,r,g,b))
       end
    end
 end
