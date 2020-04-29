@@ -270,7 +270,7 @@ function love.textinput(key)
 end
 
 function initializeMenu()
-   local menu = gui:group('', {x = 300, y=200})
+   local menu = gui:group('', {x = 400, y=300})
    local offlineButton = gui:button("Offline", {
                                        y = 0,
                                        w = 200,
