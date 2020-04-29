@@ -406,7 +406,7 @@ end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
    -- Don't grab if it's a special type and we dont have special keys enabled
-   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit", "dice"}, grabbableObject.pieceType) then
+   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit"}, grabbableObject.pieceType) then
       return false
    end
    if grabbableObject.centered then
