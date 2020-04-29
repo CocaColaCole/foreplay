@@ -9,6 +9,7 @@ local nextId = 1
 
 -- Some utility functions
 
+local gameObjects = {}
 function objectById(id)
    return lume.first(lume.filter(gameObjects, function(obj) return obj.id == id end))
 end
@@ -19,7 +20,6 @@ end
 
 -- Gameboard setup
 math.randomseed(os.time())
-local gameObjects = {}
 local dice1
 local dice2
 local playerNo = 1
