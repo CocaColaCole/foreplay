@@ -342,23 +342,29 @@ function initializeGameboard()
    end
    local devCardMapping = unpackDistribution(devCardDistribution,true)
    for i, card in lume.ripairs(devCardMapping) do
-      table.insert(gameObjects, newGrabbableObject("card", "round-shield", card,750,550,100,100,true))
+      table.insert(gameObjects, newGrabbableObject("card", "round-shield", card,575,750,100,100,true))
    end
    local resourceMapping = unpackDistribution(resourceDistribution,false)
    for i, resource in lume.ripairs(resourceMapping) do
-      local ypos = 50
+      local xpos, ypos
+      xpos = 0
       if resource == "wood" then
-         ypos = 50
+         xpos = 50
+         ypos = 300
       elseif resource == "sheep" then
-         ypos = 150
-      elseif resource == "wheat" then
-         ypos = 250
-      elseif resource == "brick" then
-         ypos = 350
-      else --stone
+         xpos = 50
          ypos = 450
+      elseif resource == "wheat" then
+         xpos = 950
+         ypos = 300
+      elseif resource == "brick" then
+         xpos = 950
+         ypos = 450
+      else --stone
+         xpos = 425
+         ypos = 750
       end
-      table.insert(gameObjects, newGrabbableObject("card", resource, "honeycomb",750,ypos, 100, 100, true))
+      table.insert(gameObjects, newGrabbableObject("card", resource, "honeycomb",xpos,ypos, 100, 100, true))
    end
    local buildingMapping = unpackDistribution(buildingDistribution)
    local colorMapping =  {{0/255,255/255,0/255},{255/255,165/255,0/255},{160/255,32/255,240/255},{150/255,75/255,0/255}}
