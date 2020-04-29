@@ -4,6 +4,9 @@ local gui = require('gspot')
 -- Local imports
 local net = require('network')
 
+-- Setup numeric addressing
+local nextId = 1
+
 -- Gameboard setup
 math.randomseed(os.time())
 local gameObjects = {}
@@ -13,9 +16,6 @@ end
 function objectsByType(pieceType)
    return lume.filter(gameObjects, function(obj) return obj.pieceType == pieceType end)
 end
-local nextId = 1
---local diceRoll1 = 1
---local diceRoll2 = 1
 local dice1
 local dice2
 local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
@@ -116,8 +116,12 @@ function serverEventHandler(dt)
          end
       end
       if event.action == "roll" then
-         dice1.image = "white-"..event.d1
-         dice2.image = "black-"..event.d2
+         local image1 = "white-"..event.d1
+         dice1.image = image1
+         dice1.back = image1
+         local image2 = "black-"..event.d2
+         dice2.image = image2
+         dice2.back = image2
          net.rollDice(event.d1, event.d2)
       end
    end
@@ -150,8 +154,12 @@ function clientEventHandler(dt)
          end
       end
       if event.action == "roll" then
-         dice1.image = "white-"..event.d1
-         dice2.image = "black-"..event.d2
+         local image1 = "white-"..event.d1
+         dice1.image = image1
+         dice1.back = image1
+         local image2 = "black-"..event.d2
+         dice2.image = image2
+         dice2.back = image2
       end
    end
 end
@@ -423,7 +431,11 @@ function rollDice()
    local dicePossibilities = {1,2,3,4,5,6}
    local diceRoll1 = lume.randomchoice(dicePossibilities)
    local diceRoll2 = lume.randomchoice(dicePossibilities)
-   dice1.image = "white-"..diceRoll1
-   dice2.image = "black-"..diceRoll2
+   local image1 = "white-"..diceRoll1
+   dice1.image = image1
+   dice1.back = image1
+   local image2 = "black-"..diceRoll2
+   dice2.image = image2
+   dice2.back = image2
    net.rollDice(diceRoll1, diceRoll2)
 end
