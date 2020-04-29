@@ -22,15 +22,9 @@ math.randomseed(os.time())
 local gameObjects = {}
 local dice1
 local dice2
-local hexLocation = {{300,150},{250,225},{200,300},{250,375},{300,450},{400,450},{500,450},{550,375},{600,300},{550,225},{500,150},{400,150},
-   {350,225},{300,300},{350,375},{450,375},{500,300},{450,225},{400,300}} --spiral layout
-local harborLocation = {{250,75},{200,150},{150,225},{100,300},{150,375},{200,450},{250,525},{350,525},{450,525},{550,525},
-   {600,450},{650,375},{700,300},{650,225},{600,150},{550,75},{450,75},{350,75}}
---[[                    {{300,150},{400,150},{500,150},
-   {250,225},{350,225},{450,225},{550,225},
-   {200,300},{300,300},{400,300},{500,300},{600,300},
-   {250,375},{350,375},{450,375},{550,375},
-   {300,450},{400,450},{500,450}}--x,y --]]
+local boardOffset = {100, 75}
+local hexLocation = {{200,75},{150,150},{100,225},{150,300},{200,375},{300,375},{400,375},{450,300},{500,225},{450,150},{400,75},{300,75},{250,150},{200,225},{250,300},{350,300},{400,225},{350,150},{300,225}}
+local harborLocation = {{150,0},{100,75},{50,150},{0,225},{50,300},{100,375},{150,450},{250,450},{350,450},{450,450},{500,375},{550,300},{600,225},{550,150},{500,75},{450,0},{350,0},{250,0}}
 local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
 local devCardDistribution = {{"knight",14},{"VP",5},{"cornucopia",2},{"top-hat",2},{"road",2}}
 local resourceDistribution = {{"wood",19},{"sheep",19},{"wheat",19},{"brick",19},{"stone",19}}
@@ -310,12 +304,12 @@ function initializeGameboard()
    table.insert(gameObjects, dice2)
    local terrainHexMapping = unpackDistribution(terrainDistribution,true)
    for i, terrain in lume.ripairs(terrainHexMapping) do
-      table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1],hexLocation[i][2],100,100,true))
+      table.insert(gameObjects, newGrabbableObject("terrainHex", terrain.."-hex", "water-hex",hexLocation[i][1] + boardOffset[1],hexLocation[i][2] + boardOffset[2],100,100,true))
       if terrain ~= "desert" then
-         table.insert(gameObjects,newGrabbableObject("numberChit",numberMapping[1].."-chit", "0-chit",hexLocation[i][1],hexLocation[i][2],50,50,true,0))
+         table.insert(gameObjects,newGrabbableObject("numberChit",numberMapping[1].."-chit", "0-chit",hexLocation[i][1] + boardOffset[1],hexLocation[i][2] + boardOffset[2],50,50,true,0))
          table.remove(numberMapping,1)
       else
-         table.insert(gameObjects,newGrabbableObject("thief","thief","thief",hexLocation[i][1],hexLocation[i][2],50,50,true))
+         table.insert(gameObjects,newGrabbableObject("thief","thief","thief",hexLocation[i][1] + boardOffset[1],hexLocation[i][2]+boardOffset[2],50,50,true))
       end
       table.remove(terrainHexMapping,i)
    end
@@ -323,10 +317,10 @@ function initializeGameboard()
    local j = 1
    for i = 1, 18 do
       if i % 2 == 1 then
-         table.insert(gameObjects, newGrabbableObject("harbor", harborMapping[j].."-harbor", "water-hex", harborLocation[i][1],harborLocation[i][2],100,100,true))
+         table.insert(gameObjects, newGrabbableObject("harbor", harborMapping[j].."-harbor", "water-hex", harborLocation[i][1] + boardOffset[1],harborLocation[i][2]+boardOffset[2],100,100,true))
          j = j + 1
       else
-         table.insert(gameObjects, newGrabbableObject("water", "water-hex", "water-hex", harborLocation[i][1],harborLocation[i][2],100,100,true))
+         table.insert(gameObjects, newGrabbableObject("water", "water-hex", "water-hex", harborLocation[i][1]+boardOffset[1],harborLocation[i][2]+boardOffset[2],100,100,true))
       end
    end
    local devCardMapping = unpackDistribution(devCardDistribution,true)
