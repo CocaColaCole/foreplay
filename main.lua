@@ -22,7 +22,8 @@ math.randomseed(os.time())
 local gameObjects = {}
 local dice1
 local dice2
-local boardOffset = {100, 75}
+local playerNo = 1
+local boardOffset = {200, 175}
 local hexLocation = {{200,75},{150,150},{100,225},{150,300},{200,375},{300,375},{400,375},{450,300},{500,225},{450,150},{400,75},{300,75},{250,150},{200,225},{250,300},{350,300},{400,225},{350,150},{300,225}}
 local harborLocation = {{150,0},{100,75},{50,150},{0,225},{50,300},{100,375},{150,450},{250,450},{350,450},{450,450},{500,375},{550,300},{600,225},{550,150},{500,75},{450,0},{350,0},{250,0}}
 local terrainDistribution = {{"wood",4},{"sheep",4},{"wheat",4},{"brick",3},{"stone",3},{"desert",1}}
@@ -175,6 +176,13 @@ function love.draw()
          drawGrabbableObject(obj)
       end
       love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
+      local hideyholes = {"fill", "fill", "fill", "fill"}
+      hideyholes[playerNo] = "line"
+      love.graphics.setColor(0, 0, 0)
+      love.graphics.rectangle(hideyholes[1], 0, 0, 300, 150)
+      love.graphics.rectangle(hideyholes[2], 700, 0, 300, 150)
+      love.graphics.rectangle(hideyholes[3], 0, 650, 300, 150)
+      love.graphics.rectangle(hideyholes[4], 700, 650, 300, 150)
    end
 end
 
@@ -232,6 +240,15 @@ function love.keypressed(key, code, isrepeat)
    elseif gamemode == 'foreplay' then
       if key == 'rshift' or key == 'lshift' then
          specialClick = true
+      end
+      if key == "1" then
+         playerNo = 1
+      elseif key == "2" then
+         playerNo = 2
+      elseif key == "3" then
+         playerNo = 3
+      elseif key == "4" then
+         playerNo = 4
       end
    end
 end
@@ -298,9 +315,9 @@ function joinMode(hostname)
 end
 
 function initializeGameboard()
-   dice1 = newGrabbableObject("dice","white-1","white-1",25,25,50,50,true)
+   dice1 = newGrabbableObject("dice","white-1","white-1",475,25,50,50,true)
    table.insert(gameObjects, dice1)
-   dice2 = newGrabbableObject("dice","black-1","black-1",75,25,50,50,true)
+   dice2 = newGrabbableObject("dice","black-1","black-1",525,25,50,50,true)
    table.insert(gameObjects, dice2)
    local terrainHexMapping = unpackDistribution(terrainDistribution,true)
    for i, terrain in lume.ripairs(terrainHexMapping) do
