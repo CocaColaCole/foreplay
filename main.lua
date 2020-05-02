@@ -22,7 +22,7 @@ end
 math.randomseed(os.time())
 local dice1
 local dice2
-local playerNo = 1
+local playerNo = 0
 local boardOffset = {200, 175}
 local hexLocation = {{200,75},{150,150},{100,225},{150,300},{200,375},{300,375},{400,375},{450,300},{500,225},{450,150},{400,75},{300,75},{250,150},{200,225},{250,300},{350,300},{400,225},{350,150},{300,225}}
 local harborLocation = {{150,0},{100,75},{50,150},{0,225},{50,300},{100,375},{150,450},{250,450},{350,450},{450,450},{500,375},{550,300},{600,225},{550,150},{500,75},{450,0},{350,0},{250,0}}
@@ -164,6 +164,7 @@ function clientEventHandler(dt)
 end
 
 function love.draw()
+   love.graphics.print(love.mouse.getX()..","..love.mouse.getY(),10,10)
    if gamemode == "menu" then
       gui:draw()
    elseif gamemode == "foreplay" then
@@ -375,11 +376,27 @@ function initializeGameboard()
       for i, building in ipairs(buildingMapping) do
          local h = 30
          local w = 30
+         local x = 0
+         local y = 0
+         if k < 3 then
+           y = 175
+         else
+           y = 625
+         end
+         if k % 2 == 1 then
+           x = 25
+         else
+           x = 750
+         end
          if building == "path" then
             w = 15
             h = 50
+         elseif building == "settlement" then
+           x = x + 25
+         else
+           x = x + 60
          end
-         table.insert(gameObjects, newGrabbableObject("building", building, building,500,100,w,h,true,0,r,g,b))
+         table.insert(gameObjects, newGrabbableObject("building", building, building,x,y,w,h,true,0,r,g,b))
       end
    end
 end
