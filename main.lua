@@ -164,7 +164,7 @@ function clientEventHandler(dt)
 end
 
 function love.draw()
-   love.graphics.print(love.mouse.getX()..","..love.mouse.getY(),10,10)
+   --love.graphics.print(love.mouse.getX()..","..love.mouse.getY(),10,10)
    if gamemode == "menu" then
       gui:draw()
    elseif gamemode == "foreplay" then
