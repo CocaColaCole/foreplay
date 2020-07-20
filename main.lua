@@ -426,6 +426,7 @@ function initializeGameboard()
          table.insert(gameObjects, newGrabbableObject("building", building, building,x,y,w,h,true,0,r,g,b))
       end
    end
+   table.insert(gameObjects, newGrabbableObject("border", "border", "border", 504,400,535,425,true))
 end
 
 function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot , r, g, b)
@@ -471,7 +472,7 @@ end
 
 function aboveGrabbableObject(grabbableObject, cursorx, cursory)
    -- Don't grab if it's a special type and we dont have special keys enabled
-   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit"}, grabbableObject.pieceType) then
+   if not specialClick and lume.find({"terrainHex", "water", "harbor","numberChit","border"}, grabbableObject.pieceType) then
       return false
    end
    if grabbableObject.centered then
