@@ -4,6 +4,12 @@ local gui = require('gspot')
 -- Local imports
 local net = require('network')
 
+local MOBILE = lume.find({"iOS", "Android"}, love.system.getOS()) ~= nil
+if MOBILE then
+   -- Activates Android's "Immersive mode", so navbar isn't in front of UI elements
+   love.window.setFullscreen(true)
+end
+
 -- Setup numeric addressing
 local nextId = 1
 
@@ -164,7 +170,6 @@ function clientEventHandler(dt)
 end
 
 function love.draw()
-   --love.graphics.print(love.mouse.getX()..","..love.mouse.getY(),10,10)
    if gamemode == "menu" then
       gui:draw()
    elseif gamemode == "foreplay" then
@@ -193,6 +198,17 @@ function love.mousepressed(x,y,button,istouch,presses)
    elseif gamemode == "foreplay" then
       -- Racer X! Racer X!
       local cursorx, cursory = love.mouse.getPosition()
+      if presses == 2 then
+         if cursorx < 300 and cursory < 150 and playerNo ~= 1 then
+            playerNo = 1
+         elseif cursorx > 700 and cursory < 150 and playerNo ~= 2 then
+            playerNo = 2
+         elseif cursorx < 300 and cursory > 650 and playerNo ~= 3 then
+            playerNo = 3
+         elseif cursorx > 700 and cursory > 650 and playerNo ~= 4 then
+            playerNo = 4
+         end
+      end
       local grabbedObjIdx
       for i, obj in lume.ripairs(gameObjects) do -- go in reverse so we grab the top objects first
          if button == 1 and aboveGrabbableObject(obj, cursorx, cursory) then
@@ -290,6 +306,17 @@ function initializeMenu()
                                      h = 50
                                               }, menu)
    joinHostname.value = "localhost"
+   joinHostname.enter = function()
+      if MOBILE then
+         joinHostname.value = ""
+         love.keyboard.setTextInput(true)
+      end
+   end
+   joinHostname.leave = function()
+      if MOBILE then
+         love.keyboard.setTextInput(false)
+      end
+   end
    local joinButton = gui:button("Join Online Game", {
                                     y = 180,
                                     w = 200,
