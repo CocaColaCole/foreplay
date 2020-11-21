@@ -182,7 +182,7 @@ function love.draw()
          drawGrabbableObject(obj)
       end
       love.graphics.setBackgroundColor(0/255, 80/255, 161/255)
-      local hideyholes = {"fill", "line", "fill", "fill"}
+      local hideyholes = {"fill", "fill", "fill", "fill"}
       hideyholes[playerNo] = "line"
       love.graphics.setColor(0, 0, 0)
       love.graphics.rectangle(hideyholes[1], 0, 0, 300, 150)
@@ -427,8 +427,6 @@ function initializeGameboard()
       end
    end
    table.insert(gameObjects, newGrabbableObject("border", "border", "border", 504,400,535,425,true))
-   table.insert(gameObjects, newGrabbableObject("card", "longest-road", "longest-road", 25, 375, 50, 50, true))
-   table.insert(gameObjects, newGrabbableObject("card", "largest-army", "largest-army", 975, 375, 50, 50, true))
 end
 
 function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot , r, g, b)
