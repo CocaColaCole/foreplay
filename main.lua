@@ -427,6 +427,8 @@ function initializeGameboard()
       end
    end
    table.insert(gameObjects, newGrabbableObject("border", "border", "border", 504,400,535,425,true))
+   table.insert(gameObjects, newGrabbableObject("card", "longest-road", "longest-road", 25, 375, 50, 50, true))
+   table.insert(gameObjects, newGrabbableObject("card", "largest-army", "largest-army", 975, 375, 50, 50, true))
 end
 
 function newGrabbableObject (pieceType, image, back, x, y, w, h, centered, rot , r, g, b)
